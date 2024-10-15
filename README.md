@@ -6,12 +6,33 @@ One sentence description
 
 ## Building
 
-Explain briefly how to build your program
+Enter the command "make" while in the directory including the .c and Makefile.
 
 ## Running
 
-Show an example run of your program, using at least two additional arguments, and what to expect
-
+Running
+>./pipe ls cat
+will output the same as 
+>ls | cat 
+```
+Output: 
+Makefile
+pipe
+pipe.c
+pipe.o
+__pycache__
+README.md
+test_lab1.py
+```
+Running 
+>./pipe ls cat wc
+will output the same as 
+>ls | cat | wc 
+```
+Output:
+7 7 63 
+```
+(outputs will vary depending on local/host system)
 ## Cleaning up
-
-Explain briefly how to clean up all binary files
+To clean up the program, run
+>make clean
