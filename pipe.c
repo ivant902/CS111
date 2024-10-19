@@ -36,10 +36,15 @@ int pipe2(int argc, char *argv[])
 			if (error1 == -1)
 			{
 				perror("dup2 failed");
-				exit(1);
+				exit(errno);
 			}
 			close(fd[1]);
-			execlp(argv[index], argv[index], NULL);
+			error = execlp(argv[index], argv[index], NULL);
+			if (error == -1)
+			{
+				perror("child execlp failed");
+				exit(errno);
+			}
 		}
 		else
 		{
@@ -57,7 +62,12 @@ int pipe2(int argc, char *argv[])
 		}
 	}
 	// handles one argument
-	execlp(argv[index], argv[index], NULL);
+	error = execlp(argv[index], argv[index], NULL);
+	if (error == -1)
+	{
+		perror("outside execlp failed");
+		exit(errno);
+	}
 	return 0;
 }
 
@@ -66,7 +76,9 @@ int main(int argc, char *argv[])
 	// handles no arguments
 	if (argc == 1)
 	{
+		errno = EINVAL;
 		perror("No arguments. Input one or more arguemnts.");
+		exit(errno);
 	}
 	else
 	{
