@@ -23,6 +23,7 @@ struct process
   /* Additional fields here */
   bool neverRan; 
   int completeTime; 
+  u32 original_burst_time; 
   /* End of "Additional fields here" */
 };
 
@@ -167,14 +168,14 @@ int main(int argc, char *argv[])
   for (int i = 0; i < size; i++)
   {
     totalBurstTime += (data+i)->burst_time; 
+    (data + i)->original_burst_time = (data + i)->burst_time;
   }
-  int copyTotalBurstTime = totalBurstTime; 
+
   for (int i = 0; i < size; i++)
   {
     (data+i)->neverRan = true; 
     (data+i)->completeTime = 0; 
-  }
-  int addedProcesses = 0; 
+  } 
   int index = 0;
   int time = 0; 
   while (totalBurstTime > 0)
@@ -184,11 +185,10 @@ int main(int argc, char *argv[])
       if ((data+i)->arrival_time == time)
       {
         TAILQ_INSERT_TAIL(&list, (data+i), pointers);
-        //printf("Added PID:%u, Time:%i, AddedProcesses: %i \n", TAILQ_LAST(&list, process_list)->pid, time, addedProcesses);
-        addedProcesses++;
+        //printf("Added PID:%u, Time:%i \n", TAILQ_LAST(&list, process_list)->pid, time);
       } 
     }
-    if (addedProcesses > 0)
+    if (!TAILQ_EMPTY(&list))
     {
       if (TAILQ_FIRST(&list)->neverRan == true)
       {
@@ -198,14 +198,15 @@ int main(int argc, char *argv[])
       TAILQ_FIRST(&list)->burst_time--;
       totalBurstTime--;
       index++;
-      struct process *temp = TAILQ_FIRST(&list);
-      printf("Time: %i, PID: %u, Arrival Time: %u, Burst Time: %u \n",time, temp->pid, temp->arrival_time, temp->burst_time);
+      //struct process *temp = TAILQ_FIRST(&list);
+      //printf("Time: %i, PID: %u, Arrival Time: %u, Burst Time: %u \n",time, temp->pid, temp->arrival_time, temp->burst_time);
       if (TAILQ_FIRST(&list)->burst_time == 0)
       {
         struct process *first_process = TAILQ_FIRST(&list);
+        u32 waiting_time = 1+time-first_process->arrival_time-first_process->original_burst_time; 
+        total_waiting_time += waiting_time;
         TAILQ_REMOVE(&list, first_process, pointers);
-        index = 0;  
-        total_waiting_time += 1+time-first_process->arrival_time;
+        index = 0; 
         //printf("%i\n", total_waiting_time); 
       }
       else if(index == quantum_length)
@@ -215,9 +216,14 @@ int main(int argc, char *argv[])
         TAILQ_REMOVE(&list, first_process, pointers); 
         TAILQ_INSERT_TAIL(&list, first_process, pointers);
       }
+      time++;
     }
-    time++;
+    else
+    {
+      time++;
+    }
   }
+
 
 
 
@@ -231,7 +237,7 @@ int main(int argc, char *argv[])
   // printf("%u", list.tqh_first->burst_time);
 
   /* End of "Your code here" */
-  total_waiting_time -= copyTotalBurstTime; 
+
   printf("Average waiting time: %.2f\n", (float)total_waiting_time / (float)size);
   printf("Average response time: %.2f\n", (float)total_response_time / (float)size);
 
