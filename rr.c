@@ -1,3 +1,4 @@
+
 #include <errno.h>
 #include <fcntl.h>
 #include <stdbool.h>
@@ -146,10 +147,30 @@ void init_processes(const char *path,
 
 int main(int argc, char *argv[])
 { 
+  // argc = 3; 
+  // argv[1] = "processes.txt";
+  // argv[2] = "3";
+  /* 
+  4
+  1, 0, 7
+  2, 2, 4
+  3, 4, 1
+  4, 5, 4
+
+
+4
+1, 0, 7
+2, 3, 4
+3, 4, 1
+4, 6, 4
+
+  */
   if (argc != 3)
   {
     return EINVAL;
   }
+  
+   
   struct process *data;
   u32 size;
   init_processes(argv[1], &data, &size);
@@ -164,50 +185,40 @@ int main(int argc, char *argv[])
 
   /* Your code here */
   int totalBurstTime = 0; 
-  
+  int index = 0;
+  int time = 0; 
   for (int i = 0; i < size; i++)
   {
     totalBurstTime += (data+i)->burst_time; 
     (data + i)->original_burst_time = (data + i)->burst_time;
-  }
-
-  for (int i = 0; i < size; i++)
-  {
     (data+i)->neverRan = true; 
     (data+i)->completeTime = 0; 
-  } 
-  int index = 0;
-  int time = 0; 
+  }
   while (totalBurstTime > 0)
   {
-    for (int i = 0; i < size; i++)
-    {
-      if ((data+i)->arrival_time == time)
-      {
-        TAILQ_INSERT_TAIL(&list, (data+i), pointers);
-        //printf("Added PID:%u, Time:%i \n", TAILQ_LAST(&list, process_list)->pid, time);
-      } 
-    }
+    printf("time: %i\n", time);
     if (!TAILQ_EMPTY(&list))
     {
       if (TAILQ_FIRST(&list)->neverRan == true)
       {
-        total_response_time += (time-TAILQ_FIRST(&list)->arrival_time); 
+        total_response_time += (time-TAILQ_FIRST(&list)->arrival_time-1); 
+        printf("Total Response Time: %i\n", total_response_time);
         TAILQ_FIRST(&list)->neverRan = false; 
       }
       TAILQ_FIRST(&list)->burst_time--;
       totalBurstTime--;
       index++;
-      //struct process *temp = TAILQ_FIRST(&list);
-      //printf("Time: %i, PID: %u, Arrival Time: %u, Burst Time: %u \n",time, temp->pid, temp->arrival_time, temp->burst_time);
+      struct process *temp = TAILQ_FIRST(&list);
+      printf("Time: %i, PID: %u, Arrival Time: %u, Burst Time: %u \n",time, temp->pid, temp->arrival_time, temp->burst_time);
       if (TAILQ_FIRST(&list)->burst_time == 0)
       {
         struct process *first_process = TAILQ_FIRST(&list);
-        u32 waiting_time = 1+time-first_process->arrival_time-first_process->original_burst_time; 
+        u32 completion_time = time ; 
+        u32 waiting_time = completion_time-first_process->arrival_time-first_process->original_burst_time; 
         total_waiting_time += waiting_time;
         TAILQ_REMOVE(&list, first_process, pointers);
         index = 0; 
-        //printf("%i\n", total_waiting_time); 
+        printf("%i\n", total_waiting_time); 
       }
       else if(index == quantum_length)
       {
@@ -217,25 +228,34 @@ int main(int argc, char *argv[])
         TAILQ_INSERT_TAIL(&list, first_process, pointers);
       }
       time++;
+      for (int i = 0; i < size; i++)
+      {
+        if ((data+i)->arrival_time == time)
+        {
+          TAILQ_INSERT_TAIL(&list, (data+i), pointers);
+          printf("Added in PID:%u, Time:%i \n", TAILQ_LAST(&list, process_list)->pid, time);
+        } 
+      }
     }
-    else
+    else 
     {
+      for (int i = 0; i < size; i++)
+      {
+        if ((data+i)->arrival_time == time)
+        {
+          TAILQ_INSERT_TAIL(&list, (data+i), pointers);
+          printf("First Added PID:%u, Time:%i \n", TAILQ_LAST(&list, process_list)->pid, time);
+        } 
+      }
       time++;
+      // if (TAILQ_EMPTY(&list))
+      // {
+      //     // No processes arrived, CPU is idle
+      //     time++; // Increment time to move forward
+      // }
     }
+    
   }
-
-
-
-
-  //struct process *counter = TAILQ_FIRST(&list); 
-  //printf("%i", size); 
-  // printf("%u", list.tqh_first->pid);
-  // printf("%u", list.tqh_first->arrival_time);
-  // printf("%u", list.tqh_first->burst_time);
-  // printf("%u", list.tqh_first->pid);
-  // printf("%u", list.tqh_first->arrival_time);
-  // printf("%u", list.tqh_first->burst_time);
-
   /* End of "Your code here" */
 
   printf("Average waiting time: %.2f\n", (float)total_waiting_time / (float)size);
