@@ -185,7 +185,7 @@ int main(int argc, char *argv[])
 
   /* Your code here */
   int totalBurstTime = 0;
-  int numAddedProcess = 0;  
+  //int numAddedProcess = 0;  
   int index = 0;
   int time = 0; 
   for (int i = 0; i < size; i++)
@@ -214,12 +214,12 @@ int main(int argc, char *argv[])
       TAILQ_FIRST(&list)->burst_time--;
       totalBurstTime--;
       index++;
-      struct process *temp = TAILQ_FIRST(&list);
-      printf("Time: %i, PID: %u, Arrival Time: %u, Burst Time: %u \n",time, temp->pid, temp->arrival_time, temp->burst_time);
+      //struct process *temp = TAILQ_FIRST(&list);
+      //printf("Time: %i, PID: %u, Arrival Time: %u, Burst Time: %u \n",time, temp->pid, temp->arrival_time, temp->burst_time);
       if (TAILQ_FIRST(&list)->neverRan == true)
       {
         total_response_time += (time-TAILQ_FIRST(&list)->arrival_time); 
-        printf("Total Response Time: %i\n", total_response_time);
+        //printf("Total Response Time: %i\n", total_response_time);
         TAILQ_FIRST(&list)->neverRan = false; 
       }
       time++;
@@ -228,7 +228,7 @@ int main(int argc, char *argv[])
         if ((data+i)->arrival_time == time)
         {
           TAILQ_INSERT_TAIL(&list, (data+i), pointers);
-          printf("Added in PID:%u, Time:%i \n", TAILQ_LAST(&list, process_list)->pid, time);
+          //printf("Added in PID:%u, Time:%i \n", TAILQ_LAST(&list, process_list)->pid, time);
         } 
       }
       if (index == quantum_length)
@@ -238,14 +238,14 @@ int main(int argc, char *argv[])
           struct process *first_process = TAILQ_FIRST(&list);
           u32 waiting_time = time-first_process->original_burst_time-first_process->arrival_time; 
           total_waiting_time += waiting_time;
-          printf("removed process: %u\n", TAILQ_FIRST(&list)->pid);
+          //printf("removed process: %u\n", TAILQ_FIRST(&list)->pid);
           TAILQ_REMOVE(&list, first_process, pointers);
           index = 0; 
-          printf("Total Waiting Time: %i\n", total_waiting_time);
+          //printf("Total Waiting Time: %i\n", total_waiting_time);
         }
         else
         {
-          printf("requeue process\n"); 
+          //printf("requeue process\n"); 
           index = 0;
           struct process *first_process = TAILQ_FIRST(&list);
           TAILQ_REMOVE(&list, first_process, pointers); 
@@ -254,13 +254,13 @@ int main(int argc, char *argv[])
       }
       else if (TAILQ_FIRST(&list)->burst_time == 0)
       {
-        printf("removed process: %u\n", TAILQ_FIRST(&list)->pid);
+        //printf("removed process: %u\n", TAILQ_FIRST(&list)->pid);
         struct process *first_process = TAILQ_FIRST(&list);
         u32 waiting_time = time-first_process->original_burst_time-first_process->arrival_time; 
         total_waiting_time += waiting_time;
         TAILQ_REMOVE(&list, first_process, pointers);
         index = 0; 
-        printf("Total Waiting Time: %i\n", total_waiting_time); 
+        //printf("Total Waiting Time: %i\n", total_waiting_time); 
       }
       
     }
@@ -271,7 +271,7 @@ int main(int argc, char *argv[])
         if ((data+i)->arrival_time == time)
         {
           TAILQ_INSERT_TAIL(&list, (data+i), pointers);
-          printf("First Added PID:%u, Time:%i \n", TAILQ_LAST(&list, process_list)->pid, time);
+          //printf("First Added PID:%u, Time:%i \n", TAILQ_LAST(&list, process_list)->pid, time);
         } 
       }
     }
