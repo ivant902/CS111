@@ -3,6 +3,7 @@
 This is a linked-list implementation of Round Robin scheduling given a quantum length and will return the average response and wait times. 
 
 ## Building
+Before running, use the command below to make the executable. 
 
 ```shell
 make
